@@ -1,10 +1,14 @@
 var map;
+var directionsDisplay;
+var directionsService;
 var x;
 var y;
 var infoWindow;
 var service;
 
 function initGoogleMap(){
+  directionsDisplay = new google.maps.DirectionsRenderer;
+  directionsService = new google.maps.DirectionsService;
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: 43.4695172, lng: -80.5490679},
     zoom: 14,
@@ -16,6 +20,7 @@ function initGoogleMap(){
           }]
   });
 
+  directionsDisplay.setMap(map);
 
   google.maps.event.addListener(map, 'click', function(event){
 	  //alert('Lat: ' + event.latLng.lat() + ' Lng: ' + event.latLng.lng());
