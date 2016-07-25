@@ -4,6 +4,7 @@
     "bootstrap": "^3.3.6",
     "angular": "^1.5.8",
     "angular-route": "^1.5.8",
-    "holderjs": "^2.9.3"
+    "holderjs": "^2.9.3",
+    "angularjs-geolocation": "^0.1.1"
   }
 }
