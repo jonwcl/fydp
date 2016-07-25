@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" ng-app="mapApp">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1.0" />
+  <title>Freaking FYDP Thing</title>
+  <!-- CSS -->
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- JS Source -->
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="js/script.js"></script>
+  <script src="js/controllers.js"></script>
+  <!-- Holder JS -->
+  <script src="bower_components/holderjs/holder.js"></script>
+</head>
+<body ng-controller="mapController">
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <ul class="nav nav-pills pull-right">
+          <li role="presentation" class="active"><a href="">Login</a></li>
+          <li role="presentation"><a href="">Don't even have an account? Register!</a></li>
+      </ul>
+      <h3 class="text-muted">The Freaking FYDP Thing</h3>
+    </div>
+    <!-- Side Panel and Map -->
+    <div class="row content">
+      <!-- Side Panel -->
+      <div class="col-md-3">
+        <div class="panel panel-default">
+          <!-- Panel Heading -->
+          <div class="panel-heading">
+            <h3 class="panel-title">Panel title w.e</h3>
+          </div>
+          <!-- Panel Body -->
+          <div class="panel-body" ng-model="mapDirection">
+            <!-- Origin Location -->
+            <label>Origin</label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLatitude">
+              <span class="input-group-addon" id="basic-addon1">Latitude</span>
+            </div>
+            <br />
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLongitude">
+              <span class="input-group-addon" id="basic-addon1">Longitude</span>
+            </div>
+            <br />
+            <!-- Destination Location -->
+            <label>Destination</label>
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="destLatitude">
+              <span class="input-group-addon" id="basic-addon1">Latitude</span>
+            </div>
+            <br />
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="destLongitude">
+              <span class="input-group-addon" id="basic-addon1">Longitude</span>
+            </div>
+            <br />
+            <!-- Start Button -->
+            <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
+            <br />
+            <!-- Display Some Results Here -->
+            <label>Result</label>
+
+          </div>
+        </div>
+      </div>
+      <!-- The Google Map View -->
+      <div class="col-md-9">
+          <div class="map" id="map"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPHk_lJHhFLJlgxWD5RuSNbLj4FP6QXcY&callback=initGoogleMap"
+  async defer></script>
+</body>
+</html>
