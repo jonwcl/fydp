@@ -12,10 +12,11 @@ function initGoogleMap(){
             stylers: [{ visibility: 'simplified' }]
           }, {
             elementType: 'labels',
-            stylers: [{ visibility: 'on' }]
+            //stylers: [{ visibility: 'off' }]
           }]
   });
-// Add destination latitude and longitude when click on the map
+
+
   google.maps.event.addListener(map, 'click', function(event){
 	  //alert('Lat: ' + event.latLng.lat() + ' Lng: ' + event.latLng.lng());
 	  var x = event.latLng.lat();
@@ -24,4 +25,63 @@ function initGoogleMap(){
 	  document.getElementById("destlong").value = y;
 	 //finddestination();
 	  });
+
+  google.maps.event.addListener(marker, "click", function (event) {
+                    alert(this.latandlong);
+}); //end addListener
+
+}
+
+function finddestination() {
+  document.getElementById("destlat").value = x;
+	document.getElementById("destlong").value = y;
+}
+
+function lookupfunction() {
+  infoWindow = new google.maps.InfoWindow();
+  service = new google.maps.places.PlacesService(map);
+  performSearch();
+}
+
+function performSearch() {
+  var keyword = document.getElementById("loopUpKeyword").value;
+    var request = {
+      bounds: map.getBounds(),
+      keyword: keyword
+    };
+  service.radarSearch(request, callback);
+}
+
+function callback(results, status) {
+  if (status !== google.maps.places.PlacesServiceStatus.OK) {
+    console.error(status);
+    return;
+  }
+  for (var i = 0, result; result = results[i]; i++) {
+    addMarker(result);
+  }
+}
+
+function addMarker(place) {
+  var marker = new google.maps.Marker({
+    map: map,
+    position: place.geometry.location,
+    icon: {
+      url: 'http://maps.gstatic.com/mapfiles/circle.png',
+      anchor: new google.maps.Point(10, 10),
+      scaledSize: new google.maps.Size(10, 17)
+    }
+  });
+
+  google.maps.event.addListener(marker, 'click', function() {
+    service.getDetails(place, function(result, status) {
+      if (status !== google.maps.places.PlacesServiceStatus.OK) {
+        console.error(status);
+        return;
+      }
+      infoWindow.setContent(result.name);
+      infoWindow.open(map, marker);
+    });
+  });
+
 }

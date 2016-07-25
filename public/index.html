@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1.0" />
-  <title>Freaking FYDP Thing</title>
+  <title>FYDP Map App</title>
   <!-- CSS -->
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -65,23 +65,44 @@
             <br />
             <button id="destbutton" onclick="finddestination()" type="button" class="btn btn-secondary btn-block" ng-click="getDestLocation()">Get Destnation Location</button>
             <br />
+            <!-- Look Up Button -->
+            <div class="input-group">
+              <input id="loopUpKeyword" type="text" class="form-control" placeholder="e.g burger" aria-describedby="basic-addon1">
+              <span class="input-group-addon" id="basic-addon1">Search</span>
+            </div>
+            <br />
+            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Look Up</button>
+            <br />
             <!-- Start Button -->
             <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
-            <br />
-            <!-- Display Some Results Here -->
-            <label>Result</label>
-            <label>Destination</label>
+          </div>
+        </div>
+        <br />
+        <!-- Display Some Results Here -->
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Result</h3>
+          </div>
+          <div class="panel-body">
+            <label>Distance</label><br />
+            <div ng-model="distance">
+              {{distance}}
+            </div>
+            <label>Travel Time</label><br />
+            <div ng-model="travelTime">
+              {{travelTime}}
+            </div>
           </div>
         </div>
       </div>
+
       <!-- The Google Map View -->
-      <div class="col-md-9">
-          <div class="map" id="map"></div>
-      </div>
+    <div class="col-md-9">
+        <div class="map" id="map"></div>
     </div>
   </div>
   <!-- Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPHk_lJHhFLJlgxWD5RuSNbLj4FP6QXcY&callback=initGoogleMap"
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPHk_lJHhFLJlgxWD5RuSNbLj4FP6QXcY&callback=initGoogleMap&libraries=places,visualization"
   async defer></script>
 </body>
 </html>
