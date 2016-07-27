@@ -18,15 +18,16 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
       if (status) {
         console.log(response);
         console.log(status);
+        $http.post('/mapDirection', response).then(function(){
+            alert("Success!");
+        });
         $window.directionsDisplay.setDirections(response);
       } else {
         alert('Directions request failed due to ' + status);
       }
     });
 
-    $http.post('/mapDirection', locations).then(function(){
-      alert("Success!");
-    });
+
   };
 
   $scope.getCurrentLocation = function(){
