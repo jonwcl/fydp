@@ -26,8 +26,8 @@ function initGoogleMap(){
 	  //alert('Lat: ' + event.latLng.lat() + ' Lng: ' + event.latLng.lng());
 	  var x = event.latLng.lat();
 	  var y = event.latLng.lng();
-	  document.getElementById("destlat").value = x;
-	  document.getElementById("destlong").value = y;
+	  document.getElementById("destlat").value = x.toFixed(7);
+	  document.getElementById("destlong").value = y.toFixed(7);
 	 //finddestination();
 	  });
 

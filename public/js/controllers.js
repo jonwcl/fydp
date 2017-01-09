@@ -10,6 +10,21 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
       "destination": destLatLong
     };
 
+    var history = {
+        destination: {
+            lat: Number($scope.destLatitude),
+            lng: Number($scope.destLongitude)
+        },
+        origin: {
+            lat: Number($scope.originLatitude),
+            lng: Number($scope.originLongitude)
+        },
+        complete: false,
+        lastRequest : [Date.now()]
+    };
+
+    $http.post('/Request', history).then();
+
     $window.directionsService.route({
       origin: originLatLong,
       destination: destLatLong,
@@ -26,8 +41,6 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
         alert('Directions request failed due to ' + status);
       }
     });
-
-
   };
 
   $scope.getCurrentLocation = function(){
