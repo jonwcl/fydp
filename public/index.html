@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en" ng-app="mapApp">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1.0" />
-  <title>FYDP Map App</title>
+  <title>FYDP Map Hack</title>
   <!-- CSS -->
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -24,7 +24,7 @@
           <li role="presentation" class="active"><a href="">Login</a></li>
           <li role="presentation"><a href="">Register</a></li>
       </ul>
-      <h3 class="text-muted">FYDP Map App</h3>
+      <h3 class="text-muted">FYDP Map Hack</h3>
     </div>
     <!-- Side Panel and Map -->
     <div class="row content">
@@ -39,6 +39,8 @@
           <div class="panel-body" ng-model="mapDirection">
             <!-- Origin Location -->
             <label>Origin</label>
+			<input id="pac-input" class="form-control" type="text" placeholder="Current Location">
+			<br />
             <div class="input-group">
               <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLatitude">
               <span class="input-group-addon" id="basic-addon1">Latitude</span>
@@ -53,6 +55,8 @@
             <br />
             <!-- Destination Location -->
             <label>Destination</label>
+			<input id="pac-input2" class="form-control" type="text" placeholder="Destination Location">
+			<br />
             <div class="input-group">
               <input id="destlat" type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="destLatitude">
               <span class="input-group-addon" id="basic-addon1">Latitude</span>
@@ -71,7 +75,7 @@
               <span class="input-group-addon" id="basic-addon1">Search</span>
             </div>
             <br />
-            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Look Up</button>
+            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Look Up Related</button>
             <br />
             <!-- Start Button -->
             <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
