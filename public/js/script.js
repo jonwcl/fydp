@@ -5,6 +5,11 @@ var x;
 var y;
 var infoWindow;
 var service;
+var geocoder;
+var tempdestlng;
+var tempdestlat;
+var tempstartlng;
+var tempstartlat;
 
 function initGoogleMap(){
   directionsDisplay = new google.maps.DirectionsRenderer;
@@ -69,6 +74,13 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
+	
+	var geocoder = new google.maps.Geocoder();
+	
+	searchBox.addListener('places_changed', function(){
+		alert("ok");
+		  geocodeAddress1(geocoder, map);
+        });
     });
   
   // Create the search box and link it to the UI element.
@@ -120,7 +132,15 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
+	
+	var geocoder = new google.maps.Geocoder();
+	searchBox2.addListener('places_changed', function(){
+		alert("ok");
+		  geocodeAddress2(geocoder, map);
+        });
     });
+	
+   
 	
   directionsDisplay.setMap(map);
 
@@ -136,12 +156,12 @@ function initGoogleMap(){
   google.maps.event.addListener(marker, "click", function (event) {
                     alert(this.latandlong);
 }); //end addListener
-
+ 
 }
 
 function finddestination() {
   document.getElementById("destlat").value = x;
-	document.getElementById("destlong").value = y;
+  document.getElementById("destlong").value = y;
 }
 
 function lookupfunction() {
@@ -190,5 +210,43 @@ function addMarker(place) {
       infoWindow.open(map, marker);
     });
   });
-
 }
+
+function geocodeAddress1(geocoder, resultsMap) {
+        var address = document.getElementById('pac-input').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+			  var tempstartlng = results[0].geometry.location.lng();
+			  var tempstartlat = results[0].geometry.location.lat();
+			  document.getElementById("startlat").value = tempstartlat;
+			  document.getElementById("startlong").value = tempstartlng;
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+}
+
+function geocodeAddress2(geocoder, resultsMap) {
+        var address = document.getElementById('pac-input2').value;
+        geocoder.geocode({'address': address}, function(results, status) {
+          if (status === 'OK') {
+			  var tempdestlng = results[0].geometry.location.lng();
+			  var tempdestlat = results[0].geometry.location.lat();
+			  document.getElementById("destlat").value = tempdestlat;
+			  document.getElementById("destlong").value = tempdestlng;
+            resultsMap.setCenter(results[0].geometry.location);
+            var marker = new google.maps.Marker({
+              map: resultsMap,
+              position: results[0].geometry.location
+            });
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+}
+
