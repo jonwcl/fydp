@@ -42,12 +42,12 @@
 			<input id="pac-input" class="form-control" type="text" placeholder="Current Location">
 			<br />
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLatitude">
+              <input id="startlat" type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLatitude">
               <span class="input-group-addon" id="basic-addon1">Latitude</span>
             </div>
             <br />
             <div class="input-group">
-              <input type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLongitude">
+              <input id="startlong" type="text" class="form-control" placeholder="0.00000" aria-describedby="basic-addon1" ng-model="originLongitude">
               <span class="input-group-addon" id="basic-addon1">Longitude</span>
             </div>
             <br />
@@ -75,7 +75,7 @@
               <span class="input-group-addon" id="basic-addon1">Search</span>
             </div>
             <br />
-            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Look Up Related</button>
+            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Detailed Look Up</button>
             <br />
             <!-- Start Button -->
             <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
