@@ -9,27 +9,28 @@ var factory = function(Schema, grid, request) {
     this.RequestHist = null;
     this.getRequest = null;
     this.updateRequest = null;
+    this.updateEdge = null;
     this.createSchemas = function() {
         console.log('Creating Schemas');
         var MapEdge = new Schema({
             //take the steps only of the item
+            origin: {
+                lat: Number,
+                lng: Number
+            },
+            destination: {
+                lat: Number,
+                lng: Number
+            },
             distance: {
                 text: String,
                 value: Number
             },
-            duration: {
+            duration: [{
                 text: String,
                 value: Number
-            },
-            end_location: {
-                lat: Number,
-                lng: Number
-            },
-            start_location: {
-                lat: Number,
-                lng: Number
-            },
-            start_time: { type: Date, default: Date.now }
+            }],
+            start_time: [{ type: Date, default: Date.now }]
         });
         var MapNode = new Schema({
             location : {
@@ -48,7 +49,8 @@ var factory = function(Schema, grid, request) {
             },
             complete: { type: Boolean, default: false },
             lastRequest: [Date],
-            expanded: { type: Boolean, default: false }
+            expanded: { type: Boolean, default: false },
+            test: {one:Number}
         });
         this.MapEdge = grid.model('MapEdge', MapEdge);
         this.MapNode = grid.model('MapNode', MapNode);
@@ -87,6 +89,13 @@ var factory = function(Schema, grid, request) {
 
     this.updateRequest = function (id, newData, callback) {
         this.RequestHist.findByIdAndUpdate(id, { $set: newData}, { new: true }, function (err, data) {
+            if (err) return callback(err);
+            callback(undefined, data);
+        });
+    }
+
+    this.updateEdge = function (id, newData, callback) {
+        this.MapEdge.findByIdAndUpdate(id, { $set: newData }, { new: true }, function (err, data) {
             if (err) return callback(err);
             callback(undefined, data);
         });

@@ -33,15 +33,29 @@ app.use(express.static('public'));
 
 app.post('/Request', function (req, res) {
     console.log("Teste");
-    var mapEdgeEntry = new mongoscheme.RequestHist(req.body);
-    mapEdgeEntry.save(function (err, mapEdgeEntry) {
+    var mapEdgeEntry = new mongoscheme.RequestHist({
+        destination: {
+            lat: req.body.destination.lat.toFixed(7),
+            lng: req.body.destination.lng.toFixed(7)
+        },
+        origin: {
+            lat: req.body.origin.lat.toFixed(7),
+            lng: req.body.origin.lng.toFixed(7)
+        },
+        complete: req.body.complete,
+        lastRequest: req.body.lastRequest
+    });
+    mapEdgeEntry.save(function (err, data) {
         if (err) {
             return console.log("failed edge");
         }
         else {
             console.log("inserted edge");
             //console.log(edge.distance);
-            console.log(mapEdgeEntry);
+            console.log(data);
+            if (!crawler.last) {
+                crawler.last = data;
+            }
         }
     });
 });
@@ -73,8 +87,8 @@ var saveMap = function (req, mongo, callback) {
             if (i == 0) {
                 var startNode = new mongo.MapNode({
                     location: {
-                        lat: Number(edge.start_location.lat),
-                        lng: Number(edge.start_location.lng)
+                        lat: Number(edge.start_location.lat).toFixed(7),
+                        lng: Number(edge.start_location.lng).toFixed(7)
                     }
                 });
                 startNode.save(function (err, startNode) {
@@ -84,27 +98,27 @@ var saveMap = function (req, mongo, callback) {
                 });
             }
             var mapEdgeEntry = new mongo.MapEdge({
+                destination: {
+                    lat: Number(edge.end_location.lat).toFixed(7),
+                    lng: Number(edge.end_location.lng).toFixed(7)
+                },
+                origin: {
+                    lat: Number(edge.start_location.lat).toFixed(7),
+                    lng: Number(edge.start_location.lng).toFixed(7)
+                },
                 distance: {
                     text: edge.distance.text,
                     value: Number(edge.distance.value)
                 },
-                duration: {
+                duration: [{
                     text: edge.duration.text,
                     value: Number(edge.duration.value)
-                },
-                end_location: {
-                    lat: Number(edge.end_location.lat),
-                    lng: Number(edge.end_location.lng)
-                },
-                start_location: {
-                    lat: Number(edge.start_location.lat),
-                    lng: Number(edge.start_location.lng)
-                },
+                }]
             });
             var endNode = new mongoscheme.MapNode({
                 location: {
-                    lat: Number(edge.end_location.lat),
-                    lng: Number(edge.end_location.lng)
+                    lat: Number(edge.end_location.lat).toFixed(7),
+                    lng: Number(edge.end_location.lng).toFixed(7)
                 }
             });
             if (time) mapEdgeEntry.start_time = time;

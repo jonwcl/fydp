@@ -7,9 +7,10 @@ const mongoose = require('mongoose');
 var crawler = function (Factory, mongo) {
     this.Factory = Factory;
     this.Mongo = mongo;
-    this.last;
+    this.last = null;
     this.main = function () {
         console.log("Crawler");
+        console.log(this.last);
         var search = function () {
             var newer = new Date(Date.now() - 20 * 60 * 1000);
             var older = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -36,18 +37,25 @@ var crawler = function (Factory, mongo) {
                     if (error) {
                         return console.log(error);
                     }
-                    popular.lastRequest.push(Date.now());
-                    Factory.updateRequest(popular.id, {
-                        complete: checkArray(popular.lastRequest),
-                        lastRequest: popular.lastRequest
-                    }, function (err, newdata) {
+                    if (data) {
+                        popular.lastRequest.push(Date.now());
+                        Factory.updateRequest(popular.id, {
+                            complete: checkArray(popular.lastRequest),
+                            lastRequest: popular.lastRequest
+                        }, function (err, newdata) {
+                            var now = new Date(Date.now());
+                            last = newdata;
+                            return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                        });
+                    }
+                    else {
                         var now = new Date(Date.now());
-                        last = newdata;
-                        return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
-                    });
+                        console.log("No new request saved at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                    }
                 });
             }
             else if (this.last) {
+                console.log("this.last");
                 var goog = googDir;
                 goog = goog + 'json?origin=' + last.origin.lat + ", " + last.origin.lng;
                 goog = goog + '&destination=' + last.destination.lat + ", " + last.destination.lng;
@@ -65,13 +73,12 @@ var crawler = function (Factory, mongo) {
                     if (parse.status != "OK") {
                         return console.log("Status not OK");
                     }
-                    console.log(parsed);
                     var parsed = JSON.parse(body).routes[0].legs[0].steps;
                     calculateMiddle(last, parsed, mongo, Factory, function (err1, data) {
                         if (err1) {
                             return console.log(err1);
                         }
-                        this.last = undefined;
+                        last = undefined;
                         var now = new Date(Date.now());
                         console.log("Request Expanded at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
                     });
@@ -144,7 +151,7 @@ function findPopular(data) {
 
 function checkComplete(req, Factory, mongo, callback) {
     console.log("checkComplete");
-    var count = 0;
+    var count ;
     var complete = 0;
     var notSaved = 0;
     var goog = googDir;
@@ -165,14 +172,14 @@ function checkComplete(req, Factory, mongo, callback) {
             return callback("Status not OK");
         }
         var parsed = JSON.parse(body).routes[0].legs[0].steps;
+        count = parsed.length * 2 + 1;
         for (var i = 0; i < parsed.length; i++) {
             var edge = parsed[i];
             if (i == 0) {
-                count++;
                 checkNode({
                     location: {
-                        lat: edge.start_location.lat,
-                        lng: edge.start_location.lng
+                        lat: Number(edge.start_location.lat).toFixed(7),
+                        lng: Number(edge.start_location.lng).toFixed(7)
                     }
                 }, Factory, mongo, function (err, data) {
                     complete++;
@@ -183,41 +190,42 @@ function checkComplete(req, Factory, mongo, callback) {
                         notSaved++;
                     }
                     if (complete == count && notSaved == count) {
-                        console.log("complete");
+                        if (newerror == "") {
+                            return callback(newerror);
+                        }
                         calculateMiddle(req, parse.routes[0].legs[0].steps, mongo, Factory, function (err1, data) {
                             if (err1) {
                                 return callback(err1);
                             }
-                            return callback(undefined, data);
+                            return callback();
                         });
                     }
-                    if (complete == count) {
-                        if (newerror == "") {
+                    else if (complete == count) {
+                        if (newerror != "") {
                             return callback(newerror);
                         }
-                        return (undefined, "Added Nodes/Edges");
+                        return callback(undefined, "Added Nodes/Edges");
                     }
                 });
             }
-            count++;
             checkEdge({
+                destination: {
+                    lat: Number(edge.end_location.lat).toFixed(7),
+                    lng: Number(edge.end_location.lng).toFixed(7)
+                },
+                origin: {
+                    lat: Number(edge.start_location.lat).toFixed(7),
+                    lng: Number(edge.start_location.lng).toFixed(7)
+                },
                 distance: {
                     text: edge.distance.text,
-                    value: edge.distance.value
+                    value: Number(edge.distance.value)
                 },
-                duration: {
+                duration: [{
                     text: edge.duration.text,
-                    value: edge.duration.value
-                },
-                end_location: {
-                    lat: edge.end_location.lat,
-                    lng: edge.end_location.lng
-                },
-                start_location: {
-                    lat: edge.start_location.lat,
-                    lng: edge.start_location.lng
-                },
-                start_time: time
+                    value: Number(edge.duration.value)
+                }],
+                start_time: [time]
             }, Factory, mongo, function (err, data) {
                 complete++;
                 if (err) {
@@ -227,26 +235,24 @@ function checkComplete(req, Factory, mongo, callback) {
                     notSaved++;
                 }
                 if (complete == count && notSaved == count) {
-                    console.log("complete");
                     calculateMiddle(req, parse.routes[0].legs[0].steps, mongo, Factory, function (err1, data) {
                         if (err1) {
                             return callback(err1);
                         }
-                        return callback(undefined, data);
+                        return callback();
                     });
                 }
-                if (complete == count) {
-                    if (newerror == "") {
+                else if (complete == count) {
+                    if (newerror != "") {
                         return callback(newerror);
                     }
-                    return (undefined, "Added Nodes/Edges");
+                    return callback(undefined, "Added Nodes/Edges");
                 }
             });
-            count++;
             checkNode({
                 location: {
-                    lat: edge.end_location.lat,
-                    lng: edge.end_location.lng
+                    lat: Number(edge.end_location.lat).toFixed(7),
+                    lng: Number(edge.end_location.lng).toFixed(7)
                 }
             }, Factory, mongo, function (err, data) {
                 complete++;
@@ -257,19 +263,18 @@ function checkComplete(req, Factory, mongo, callback) {
                     notSaved++;
                 }
                 if (complete == count && notSaved == count) {
-                    console.log("complete");
                     calculateMiddle(req, parse.routes[0].legs[0].steps, mongo, Factory, function (err1, data) {
                         if (err1) {
                             return callback(err1);
                         }
-                        return callback(undefined, data);
+                        return callback();
                     });
                 }
-                if (complete == count) {
-                    if (newerror == "") {
+                else if (complete == count) {
+                    if (newerror != "") {
                         return callback(newerror);
                     }
-                    return (undefined, "Added Nodes/Edges");
+                    return callback(undefined, "Added Nodes/Edges");
                 }
             });
         }
@@ -292,40 +297,51 @@ function checkNode(node, Factory, mongo, callback) {
                 return callback(undefined, "New Node Saved");
             });
         }
-
-        return callback();
+        else { return callback(); }
     });
 }
 
 function checkEdge(edge, Factory, mongo, callback) {
     //console.log("checkEdge");
-    var edgeDate = new Date(edge.start_time);
+    var check = {
+        destination: {
+            lat: Number(edge.destination.lat),
+            lng: Number(edge.destination.lng)
+        },
+        origin: {
+            lat: Number(edge.origin.lat),
+            lng: Number(edge.origin.lng)
+        }
+    };
+    var edgeDate = new Date(edge.start_time[0]);
     var newEdgeTime = edgeDate.getHours() + edgeDate.getMinutes() / 60;
-    Factory.getEdge(edge, function (error, data) {
+    Factory.getEdge(check, function (error, data) {
         if (error) {
             return callback(error);
         }
-
-        if (data) {
+        if (data && Array.isArray(data) && data[0]) {
             var check = false;
-            for (var i = 0; i < data.length; i++) {
-                var oldEdgeTime = Date(data[i].start_time).getHours() + Date(data[i].start_time).getMinutes() / 60;
+            for (var i = 0; i < data[0].start_time.length; i++) {
+                var oldEdgeTime = data[0].start_time[i].getHours() + data[0].start_time[i].getMinutes() / 60;
                 var newer = new Date(edgeDate - 20 * 24 * 60 * 60 * 1000);
-
-                if (oldEdgeTime > newEdgeTime - 0.5 && oldEdgeTime < newEdgeTime + 0.5 && data[i].start_time > newer) {
+                if (oldEdgeTime > newEdgeTime - 0.25 && oldEdgeTime < newEdgeTime + 0.25 && data[0].start_time[i] > newer) {
                     check = true;
                 }
             }
             if (!check) {
-                var newEdge = new mongo.MapEdge(edge);
-                newEdge.save(function (err, mongoData) {
+                data[0].start_time.push(edge.start_time[0]);
+                data[0].duration.push(edge.duration[0]);
+                var newEdge = new mongo.MapEdge(data[0]);
+                Factory.updateEdge(data[0].id, data[0], function (err, data) {
                     if (err) {
                         return callback(err);
                     }
-                    return callback(undefined, "An Edge Save at a new time :" + newEdgeTime);
+                    return callback(undefined, "An Edge Updated at a new time :" + newEdgeTime);
                 });
             }
-            return callback();
+            else {
+                return callback();
+            }
         }
         else {
             var newEdge = new mongo.MapEdge(edge);
@@ -341,69 +357,69 @@ function checkEdge(edge, Factory, mongo, callback) {
 
 function calculateMiddle(req, route, mongo, Factory, callback) {
     console.log("middle");
+    if (req.expanded) {
+        return callback(undefined, "Expanded Not Needed");
+    }
 
-    if (!req.expanded) {
-        var total = 0;
-        var distance = 0;
-        var center;
-        for (var i = 0; i < route.length; i++) {
-            total += route[i].distance.value;
+    var total = 0;
+    var distance = 0;
+    var center;
+    for (var i = 0; i < route.length; i++) {
+        total += route[i].distance.value;
+    }
+
+    for (var i = 0; i < route.length; i++) {
+        distance += route[i].distance.value;
+        if (distance > total / 2) {
+            center = route[i];
+            i = route.length;
         }
+    }
+    var lat = center.start_location.lat + (center.end_location.lat - center.start_location.lat) / 2;
+    var lng = center.start_location.lng + (center.end_location.lng - center.start_location.lng) / 2;
 
-        for (var i = 0; i < route.length; i++) {
-            distance += route[i].distance.value;
-            if (distance > total / 2) {
-                center = route[i];
-                i = route.length;
-            }
+    var goog = googLoc;
+    goog = goog + 'json?location=' + lat.toFixed(7) + ", " + lng.toFixed(7);
+    goog = goog + '&radius=' + (total / 2).toFixed(0);
+    goog = goog + '&key=' + googleAPIKey;
+
+    request(goog, function (error, response, body) {
+        if (error || response.statusCode != 200) {
+            return callback(error);
         }
-        var lat = center.start_location.lat + (center.end_location.lat - center.start_location.lat) / 2;
-        var lng = center.start_location.lng + (center.end_location.lng - center.start_location.lng) / 2;
+        var parse = JSON.parse(body);
+        parse = parse.results;
 
-        var goog = googLoc;
-        goog = goog + 'json?location=' + lat.toFixed(7) + ", " + lng.toFixed(7);
-        goog = goog + '&radius=' + (total / 2).toFixed(0);
-        goog = goog + '&key=' + googleAPIKey;
-
-        request(goog, function (error, response, body) {
-            if (!error && response.statusCode == 200) {
-                var parse = JSON.parse(body);
-                parse = parse.results;
-
-                var newRequest = [];
-                for (var i = 0; i < (parse.length > 25 ? 25 : parse.length) ; i++) {
-                    if ((req.origin.lat != parse[i].geometry.location.lat || req.origin.lng != parse[i].geometry.location.lng) &&
-                        distcalc(req.origin, parse[i].geometry.location) > 100) {
-                        newRequest.push({
-                            destination: parse[i].geometry.location,
-                            origin: req.origin,
-                            complete: false
-                        });
-                    }
-                    if ((req.destination.lat != parse[i].geometry.location.lat || req.destination.lng != parse[i].geometry.location.lng) &&
-                        distcalc(req.destination, parse[i].geometry.location) > 100) {
-                        newRequest.push({
-                            destination: req.destination,
-                            origin: parse[i].geometry.location,
-                            complete: false
-                        });
-                    }
-                }
-                Factory.RequestHist.create(newRequest, function (err, requests) {
-                    if (err) {
-                        return callback(err);
-                    }
-                    Factory.updateRequest(req.id, {
-                        expanded: true
-                    }, function (err, newdata) {
-                        return callback(undefined, "Added new Request to the database");
-                    });
+        var newRequest = [];
+        for (var i = 0; i < (parse.length > 25 ? 25 : parse.length) ; i++) {
+            if ((req.origin.lat != parse[i].geometry.location.lat || req.origin.lng != parse[i].geometry.location.lng) &&
+                distcalc(req.origin, parse[i].geometry.location) > 100) {
+                newRequest.push({
+                    destination: parse[i].geometry.location,
+                    origin: req.origin,
+                    complete: false
                 });
             }
-            return callback(error);
+            if ((req.destination.lat != parse[i].geometry.location.lat || req.destination.lng != parse[i].geometry.location.lng) &&
+                distcalc(req.destination, parse[i].geometry.location) > 100) {
+                newRequest.push({
+                    destination: req.destination,
+                    origin: parse[i].geometry.location,
+                    complete: false
+                });
+            }
+        }
+        Factory.RequestHist.create(newRequest, function (err, requests) {
+            if (err) {
+                return callback(err);
+            }
+            Factory.updateRequest(req.id, {
+                expanded: true
+            }, function (err, newdata) {
+                return callback(undefined, "Added new Request to the database");
+            });
         });
-    }
-    return callback(undefined, "Expanded Not Needed");
+    });
 }
 
 function distcalc(start, end) {
