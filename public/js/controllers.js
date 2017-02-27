@@ -28,15 +28,19 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
     $window.directionsService.route({
       origin: originLatLong,
       destination: destLatLong,
-      travelMode: google.maps.TravelMode.DRIVING
+      travelMode: google.maps.TravelMode.DRIVING,
+      provideRouteAlternatives: true
     }, function(response, status) {
       if (status) {
         console.log(response);
         console.log(status);
+        //var temp = response.route[0];
+        //response.route[0] = response.route[1];
+        //response.route[1] = temp;
+        $window.directionsDisplay.setDirections(response);
         $http.post('/mapDirection', response).then(function(){
             alert("Success!");
         });
-        $window.directionsDisplay.setDirections(response);
       } else {
         alert('Directions request failed due to ' + status);
       }
