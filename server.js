@@ -19,7 +19,7 @@ var crawlerFunc = new crawler.Crawler(Factory, mongoscheme);
 
 //Factory.getNode({}, {});
 crawlerFunc.main();
-setInterval(function () { crawlerFunc.main(); }, 60 * 1000);
+setInterval(function () { crawlerFunc.main(); }, 30 * 60 * 1000);
 
 var app = express();
 

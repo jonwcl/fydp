@@ -66,6 +66,11 @@ function initGoogleMap(){
     title: place.name,
     position: place.geometry.location
   }));
+
+  var x = place.geometry.location.lat();
+  var y = place.geometry.location.lng();
+  document.getElementById("startlat").value = x.toFixed(7);
+  document.getElementById("startlong").value = y.toFixed(7);
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
@@ -124,6 +129,11 @@ function initGoogleMap(){
     title: place.name,
     position: place.geometry.location
   }));
+
+  var x = place.geometry.location.lat();
+  var y = place.geometry.location.lng();
+  document.getElementById("destlat").value = x.toFixed(7);
+  document.getElementById("destlong").value = y.toFixed(7);
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
