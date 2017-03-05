@@ -3,7 +3,6 @@ var express = require('express');
 var http = require('http');
 var bodyParser = require('body-parser');
 var request = require('request');
-
 var google = 'https://maps.googleapis.com/maps/api/directions/';
 var googleAPIKey = 'AIzaSyDrCDc2H3nnU1Xzse6kLULKvwWGeRwUY_s';
 var mongoscheme = require('./app');
@@ -32,7 +31,7 @@ app.use(express.static('public'));
 // Functions
 
 app.post('/Request', function (req, res) {
-    console.log("Teste");
+    //console.log("Teste");
     var mapEdgeEntry = new mongoscheme.RequestHist({
         destination: {
             lat: req.body.destination.lat.toFixed(7),
@@ -69,6 +68,47 @@ app.post('/mapDirection', function (req, res) {
     });
 });
 
+app.get('/ping', function(req, res) {
+    console.log('ping');
+})
+
+app.get('/getGraph', function(req, res) {
+    var nodeDict = {};
+    Factory.getNode({}, function(error, data) {
+        for (var i = 0; i < data.length; i++) {
+            var node = new Node(data[i]);
+            nodeDict[node.nodeId] = node;
+            //console.log(node.nodeId);
+
+        }
+        Factory.getEdge({}, function (error, data) {
+            for (var i = 0; i < data.length; i++) {
+                //for each edge, get the cost
+                    var edge = new Edge(data[i], nodeDict);
+                    edge.startNode.adjacent[edge.endNode.nodeId] = edge.cost;
+                    edge.endNode.adjacent[edge.startNode.nodeId] = edge.cost;
+
+            }
+            var graph = new Graph();
+            for (var key in nodeDict) {
+                graph.addVertex(nodeDict[key].nodeId, nodeDict[key].adjacent);
+            }
+            //console.log(graph);
+
+            //var waterloo = {location : { lat: 43.4642578, lng: -80.5204096 }};  
+            //var toronto = {location : { lat: 43.6532260, lng: -79.3831843 }};
+            //var origin = nodeDict[getNodeKey(waterloo)];
+            //var dest = nodeDict[getNodeKey(toronto)]; 
+            //i picked random points that i actually have in my db....u can test it and do the same...
+            var start = '43.4643018,-80.5204212';
+            var end = '43.5129003,-79.6601157';
+            //console.log(graph.shortestPath(origin.id, dest.id).concat([origin.id]).reverse());     
+            console.log(graph.shortestPath(start, end).concat([start]).reverse());  
+            return graph;
+        })
+    })
+})
+
 // Listen
 app.listen(3000, function () {
     console.log('FYDP app listening on port 3000!');
@@ -81,6 +121,7 @@ var saveMap = function (req, mongo, callback) {
     var parse = req;
     if (parse.status == "OK") {
         var parsed = req.routes[0].legs[0].steps;
+        console.log(parsed);
         for (var i = 0; i < parsed.length; i++) {
             var edge = parsed[i];
             //console.dir(edge);
@@ -139,3 +180,147 @@ var saveMap = function (req, mongo, callback) {
         return callback(undefined, 200);
     }
 };
+
+
+
+
+
+//put this in new file...
+
+
+
+
+//dijkstra
+function PriorityQueue () {
+  this._nodes = [];
+
+  this.enqueue = function (priority, key) {
+    this._nodes.push({key: key, priority: priority });
+    this.sort();
+  };
+  this.dequeue = function () {
+    return this._nodes.shift().key;
+  };
+  this.sort = function () {
+    this._nodes.sort(function (a, b) {
+      return a.priority - b.priority;
+    });
+  };
+  this.isEmpty = function () {
+    return !this._nodes.length;
+  };
+}
+
+function Node (node) {
+    this.nodeId = getNodeKey(node);
+    this.adjacent = {};
+    this.lat = node.location.lat;
+    this.lng = node.location.lng;
+}
+
+function Edge (edge, nodeDict) {
+    //this.edgeId = getStartNode(edge, nodeDict).id + "->" + getEndNode(edge, nodeDict).id;    
+    this.startNode = getStartNode(edge, nodeDict);
+    this.endNode = getEndNode(edge, nodeDict);
+    //this.edge = edge;
+    this.cost = getCost(edge);//take the worst 
+}
+
+function getCost (edge) {
+    //X = u + Zo mean + variance
+    var data = edge.duration;
+    var distance = edge.distance.value;
+    var sum = 0;
+    for (var i = 0; i < data.length; i++) {
+        sum += data[i].value;
+    }
+    var mean = sum / data.length;
+    var varSum = 0;
+    for (var i = 0; i < data.length; i++) {
+        var diff = data[i].value - mean;
+        varSum += diff * diff;
+    }
+    var variance = Math.sqrt(varSum / (data.length));
+    var cost = distance / (mean + 1.282 * variance);
+    return cost;
+
+}
+
+function getNodeKey(node) {
+    return node.location.lat + "," + node.location.lng;
+}
+
+function getStartNode(edge, nodeDict) {
+    var key = edge.origin.lat + "," + edge.origin.lng;
+    return nodeDict[key];
+}
+
+function getEndNode(edge, nodeDict) {
+    var key = edge.destination.lat + "," + edge.destination.lng;
+    return nodeDict[key];
+}
+
+/**
+ * Pathfinding starts here
+ */
+function Graph(){
+  var INFINITY = 1/0;
+  this.vertices = {};
+
+  this.addVertex = function(name, edges){
+    this.vertices[name] = edges;
+  };
+
+  this.shortestPath = function (start, finish) {
+    var nodes = new PriorityQueue(),
+        distances = {},
+        previous = {},
+        path = [],
+        smallest, vertex, neighbor, alt;
+
+    for(vertex in this.vertices) {
+      if(vertex === start) {
+        distances[vertex] = 0;
+        nodes.enqueue(0, vertex);
+      }
+      else {
+        distances[vertex] = INFINITY;
+        nodes.enqueue(INFINITY, vertex);
+      }
+
+      previous[vertex] = null;
+    }
+
+    while(!nodes.isEmpty()) {
+      smallest = nodes.dequeue();
+
+      if(smallest === finish) {
+        path = [];
+
+        while(previous[smallest]) {
+          path.push(smallest);
+          smallest = previous[smallest];
+        }
+
+        break;
+      }
+
+      if(!smallest || distances[smallest] === INFINITY){
+        continue;
+      }
+
+      for(neighbor in this.vertices[smallest]) {
+        alt = distances[smallest] + this.vertices[smallest][neighbor];
+
+        if(alt < distances[neighbor]) {
+          distances[neighbor] = alt;
+          previous[neighbor] = smallest;
+
+          nodes.enqueue(alt, neighbor);
+        }
+      }
+    }
+
+    return path;
+  };
+}
