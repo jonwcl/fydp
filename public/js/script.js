@@ -69,8 +69,12 @@ function initGoogleMap(){
 
   var x = place.geometry.location.lat();
   var y = place.geometry.location.lng();
-  document.getElementById("startlat").value = x.toFixed(7);
-  document.getElementById("startlong").value = y.toFixed(7);
+  // document.getElementById("startlat").value = x.toFixed(7);
+  // document.getElementById("startlong").value = y.toFixed(7);
+
+  document.getElementById("startlat").value = "43.4642578";
+  document.getElementById("startlong").value = "-80.5204096";
+
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
@@ -79,15 +83,15 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
-	
+
 	var geocoder = new google.maps.Geocoder();
-	
+
 	searchBox.addListener('places_changed', function(){
 		alert("ok");
 		  geocodeAddress1(geocoder, map);
         });
     });
-  
+
   // Create the search box and link it to the UI element.
   var input2 = document.getElementById('pac-input2');
   var searchBox2 = new google.maps.places.SearchBox(input2);
@@ -132,8 +136,11 @@ function initGoogleMap(){
 
   var x = place.geometry.location.lat();
   var y = place.geometry.location.lng();
-  document.getElementById("destlat").value = x.toFixed(7);
-  document.getElementById("destlong").value = y.toFixed(7);
+  // document.getElementById("destlat").value = x.toFixed(7);
+  // document.getElementById("destlong").value = y.toFixed(7);
+
+  document.getElementById("destlat").value = "43.6532260";
+  document.getElementById("destlong").value = "-79.3831843";
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
@@ -142,16 +149,16 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
-	
+
 	var geocoder = new google.maps.Geocoder();
 	searchBox2.addListener('places_changed', function(){
 		alert("ok");
 		  geocodeAddress2(geocoder, map);
         });
     });
-	
-   
-	
+
+
+
   directionsDisplay.setMap(map);
 
   google.maps.event.addListener(map, 'click', function(event){
@@ -160,13 +167,13 @@ function initGoogleMap(){
 	  var y = event.latLng.lng();
 	  document.getElementById("destlat").value = x.toFixed(7);
 	  document.getElementById("destlong").value = y.toFixed(7);
-	 //finddestination();
+	  //finddestination();
 	  });
 
   google.maps.event.addListener(marker, "click", function (event) {
                     alert(this.latandlong);
 }); //end addListener
- 
+
 }
 
 function finddestination() {
@@ -259,4 +266,3 @@ function geocodeAddress2(geocoder, resultsMap) {
           }
         });
 }
-

@@ -3,8 +3,14 @@ var mapController = angular.module('mapController', ['geolocation']);
 
 mapController.controller('mapController', function($scope, $http, $window, geolocation) {
   $scope.getDirection = function() {
-    var originLatLong = $scope.originLatitude + ', ' + $scope.originLongitude;
-    var destLatLong = $scope.destLatitude + ', ' + $scope.destLongitude;
+
+      $scope.originLatitude = 43.46425780;
+      $scope.originLongitude = -80.52040960;
+      $scope.destLatitude = 43.65322600;
+      $scope.destLongitude = -79.38318430;
+
+    var originLatLong = $scope.originLatitude + ',' + $scope.originLongitude;
+    var destLatLong = $scope.destLatitude + ',' + $scope.destLongitude;
     var locations = {
       "origin": originLatLong,
       "destination": destLatLong
@@ -22,9 +28,9 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
         complete: false,
         lastRequest : [Date.now()]
     };
-    console.log("hi");
+    // console.log("hi");
     $http.post('/Request', history).then();
-    console.log("hi");
+    // console.log("hi");
     $window.directionsService.route({
       origin: originLatLong,
       destination: destLatLong,
@@ -70,7 +76,7 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
 
         console.log(routes);
         $http.post('/choosePath', routes).then(function(data){
-            console.log("choosePath");
+            // console.log("choosePath");
             console.log(data);
             $window.directionsDisplay.setDirections(response);
             alert("Success!");
