@@ -4,10 +4,10 @@ var mapController = angular.module('mapController', ['geolocation']);
 mapController.controller('mapController', function($scope, $http, $window, geolocation) {
   $scope.getDirection = function() {
 
-      $scope.originLatitude = 43.46425780;
-      $scope.originLongitude = -80.52040960;
-      $scope.destLatitude = 43.65322600;
-      $scope.destLongitude = -79.38318430;
+      $scope.originLatitude = 43.4643018;
+      $scope.originLongitude = -80.5204212;
+      $scope.destLatitude = 43.6533103;
+      $scope.destLongitude = -79.3827675;
 
     var originLatLong = $scope.originLatitude + ',' + $scope.originLongitude;
     var destLatLong = $scope.destLatitude + ',' + $scope.destLongitude;
