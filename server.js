@@ -6,7 +6,7 @@ var request = require('request');
 var google = 'https://maps.googleapis.com/maps/api/directions/';
 var googleAPIKey = 'AIzaSyDrCDc2H3nnU1Xzse6kLULKvwWGeRwUY_s';
 var mongoscheme = require('./app');
-var url = 'mongodb://localhost:27017/map_edges_storage';//db 
+var url = 'mongodb://localhost:27017/map_edges_storage';//db
 const mongoose = require('mongoose');
 const options = { server: { socketOptions: { keepAlive: 1 } } };
 var requestDB = mongoose.createConnection('mongodb://localhost:27017/request', options);
@@ -30,9 +30,13 @@ app.use(express.static('public'));
 
 // Functions
 app.post('/choosePath', function(req, response) {
-    var optimal = getOptimalPath();
-    console.log(optimal);
+    getOptimalPath(function (data){
+        var optimal = data;
+
+    console.log(JSON.stringify( optimal));
     var nodeDict = optimal["nodeDict"];
+        console.log("nodeDict");
+            console.log(nodeDict);
     var routes = req.body["routes"];
     console.log(routes);
     var chosenRoute = 0;
@@ -56,6 +60,7 @@ app.post('/choosePath', function(req, response) {
     response.writeHead(200, {"Content-Type": "application/json"});
     var json = JSON.stringify({result});
     response.end(json);
+});
     //return result;
 })
 
@@ -104,10 +109,10 @@ app.get('/ping', function(req, res) {
     console.log('ping');
 })
 
-var response = {};
-function getOptimalPath() {
+//var response = {};
+function getOptimalPath(callback) {
     var nodeDict = {};
-    //response = {};
+    var response = {};
     Factory.getNode({}, function(error, data) {
         for (var i = 0; i < data.length; i++) {
             var node = new Node(data[i]);
@@ -131,14 +136,14 @@ function getOptimalPath() {
             }
             //console.log(graph);
 
-            //var waterloo = {location : { lat: 43.4642578, lng: -80.5204096 }};  
+            //var waterloo = {location : { lat: 43.4642578, lng: -80.5204096 }};
             //var toronto = {location : { lat: 43.6532260, lng: -79.3831843 }};
             //var origin = nodeDict[getNodeKey(waterloo)];
-            //var dest = nodeDict[getNodeKey(toronto)]; 
+            //var dest = nodeDict[getNodeKey(toronto)];
             //i picked random points that i actually have in my db....u can test it and do the same...
             var start = '43.4643018,-80.5204212';
             var end = '43.6533103,-79.3827675';
-            //console.log(graph.shortestPath(origin.id, dest.id).concat([origin.id]).reverse());     
+            //console.log(graph.shortestPath(origin.id, dest.id).concat([origin.id]).reverse());
             var optimalPath = graph.shortestPath(start, end).concat([start]).reverse();
             /*var costs = new Array();
             var times = new Array();
@@ -150,29 +155,32 @@ function getOptimalPath() {
                 costs.push(cost);
                 times.push(time);
             }*/
-            
+
             response["path"] = optimalPath;
             //response["costs"] = costs;
             //response["times"] = times;
             response["nodeDict"] = nodeDict;
-            //console.log(response);  
-            //return response;
+            //console.log(response);
+            return callback(response);
         })
         //return response;
-    })   
-    return response; 
+    })
+    // return response;
 }
 
 function getCostsAndTimes(nodeDict, path) {
+    console.log("getCostsAndTimes");
     var costs = new Array();
     var times = new Array();
     for (var i = 0; i < path.length - 1; i++) {
                 var start = path[i];
                 var end = path[i + 1];
+                console.log(start);
+                console.log(nodeDict[start]);
                 var cost = nodeDict[start].adjacent[end];
                 var time = nodeDict[start].times[end];
                 costs.push(cost);
-                times.push(time);        
+                times.push(time);
     }
     var res = {};
     res["costs"] = costs;
@@ -307,12 +315,12 @@ function Node (node) {
 }
 
 function Edge (edge, nodeDict) {
-    //this.edgeId = getStartNode(edge, nodeDict).id + "->" + getEndNode(edge, nodeDict).id;    
+    //this.edgeId = getStartNode(edge, nodeDict).id + "->" + getEndNode(edge, nodeDict).id;
     this.startNode = getStartNode(edge, nodeDict);
     this.endNode = getEndNode(edge, nodeDict);
     //this.edge = edge;
     this.time = getWorstCaseDuration(edge);
-    this.cost = getCost(edge);//take the worst 
+    this.cost = getCost(edge);//take the worst
 }
 
 function getCost (edge) {
@@ -347,16 +355,16 @@ function getWorstCaseDuration (edge) {
 }
 
 function getNodeKey(node) {
-    return node.location.lat + "," + node.location.lng;
+    return node.location.lat.toFixed(7) + "," + node.location.lng.toFixed(7);
 }
 
 function getStartNode(edge, nodeDict) {
-    var key = edge.origin.lat + "," + edge.origin.lng;
+    var key = edge.origin.lat.toFixed(7) + "," + edge.origin.lng.toFixed(7);
     return nodeDict[key];
 }
 
 function getEndNode(edge, nodeDict) {
-    var key = edge.destination.lat + "," + edge.destination.lng;
+    var key = edge.destination.lat.toFixed(7) + "," + edge.destination.lng.toFixed(7);
     return nodeDict[key];
 }
 
