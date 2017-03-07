@@ -32,14 +32,8 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
       provideRouteAlternatives: true
     }, function(response, status) {
       if (status) {
-<<<<<<< HEAD
-        console.log(response);
-        console.log(status);
-        console.log("hi");
-=======
         //console.log(response);
         //console.log(status);
->>>>>>> 6dd2f8e3cda9fa7b122772400580b5703d6dd831
         //var temp = response.route[0];
         //response.route[0] = response.route[1];
         //response.route[1] = temp;
