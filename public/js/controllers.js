@@ -77,7 +77,7 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
         console.log(routes);
         $http.post('/choosePath', routes).then(function(data){
             // console.log("choosePath");
-            console.log(data.data.result[0].totalTime);
+            console.log(data);
             // $window.directionsDisplay.setDirections(response);
             for (var i = 0, len = response.routes.length; i < len; i++) {
                 new google.maps.DirectionsRenderer({
