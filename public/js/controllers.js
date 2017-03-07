@@ -22,9 +22,9 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
         complete: false,
         lastRequest : [Date.now()]
     };
-
+    console.log("hi");
     $http.post('/Request', history).then();
-
+    console.log("hi");
     $window.directionsService.route({
       origin: originLatLong,
       destination: destLatLong,
@@ -34,6 +34,7 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
       if (status) {
         console.log(response);
         console.log(status);
+        console.log("hi");
         //var temp = response.route[0];
         //response.route[0] = response.route[1];
         //response.route[1] = temp;

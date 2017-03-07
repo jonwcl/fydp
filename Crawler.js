@@ -25,7 +25,7 @@ var crawler = function (Factory, mongo) {
         goog = goog + '&alternatives=true';
         goog = goog + '&departure_time=' + Date.now();
         goog = goog + '&key=' + googleAPIKey;
-
+        console.log(goog);
         request(goog, function (error, response, body) {
             if (error || response.statusCode != 200) {
                 return console.log(error);

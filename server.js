@@ -29,9 +29,39 @@ app.use(bodyParser.json());
 app.use(express.static('public'));
 
 // Functions
+app.post('/choosePath', function(req, response) {
+    var optimal = getOptimalPath();
+    console.log(optimal);
+    var nodeDict = optimal["nodeDict"];
+    var routes = req.body["routes"];
+    console.log(routes);
+    var chosenRoute = 0;
+    var diff = optimal["path"].length * 2;
+    var result = [];
+    for (var i = 0; i < routes.length; i++) {
+        var currDiff = compare(routes[i], optimal["path"]);
+        if (currDiff < diff) {
+            diff = currDiff;
+            chosenRoute = i;
+        }
+        var res = {};
+        res["path"] = routes[i];
+        res["stats"] = getCostsAndTimes(nodeDict, routes[i]);
+        res["totalTime"] = res["stats"]["times"].reduce((a, b) => a + b, 0);
+        res["chosen"] = false;
+        result.push(res);
+    }
+
+    result[chosenRoute]["chosen"] = true;
+    response.writeHead(200, {"Content-Type": "application/json"});
+    var json = JSON.stringify({result});
+    response.end(json);
+    //return result;
+})
 
 app.post('/Request', function (req, res) {
     //console.log("Teste");
+
     var mapEdgeEntry = new mongoscheme.RequestHist({
         destination: {
             lat: req.body.destination.lat.toFixed(7),
@@ -60,6 +90,8 @@ app.post('/Request', function (req, res) {
 });
 
 app.post('/mapDirection', function (req, res) {
+    var optimalPath = getOptimalPath();
+    console.log(req.body);
     saveMap(req.body, mongoscheme, function (error, data) {
         if (error) {
             return res.status(500).send(error).end();
@@ -72,8 +104,10 @@ app.get('/ping', function(req, res) {
     console.log('ping');
 })
 
-app.get('/getGraph', function(req, res) {
+var response = {};
+function getOptimalPath() {
     var nodeDict = {};
+    //response = {};
     Factory.getNode({}, function(error, data) {
         for (var i = 0; i < data.length; i++) {
             var node = new Node(data[i]);
@@ -87,6 +121,8 @@ app.get('/getGraph', function(req, res) {
                     var edge = new Edge(data[i], nodeDict);
                     edge.startNode.adjacent[edge.endNode.nodeId] = edge.cost;
                     edge.endNode.adjacent[edge.startNode.nodeId] = edge.cost;
+                    edge.startNode.times[edge.endNode.nodeId] = edge.time;
+                    edge.endNode.times[edge.endNode.nodeId] = edge.time;
 
             }
             var graph = new Graph();
@@ -101,13 +137,64 @@ app.get('/getGraph', function(req, res) {
             //var dest = nodeDict[getNodeKey(toronto)]; 
             //i picked random points that i actually have in my db....u can test it and do the same...
             var start = '43.4643018,-80.5204212';
-            var end = '43.5129003,-79.6601157';
+            var end = '43.6533103,-79.3827675';
             //console.log(graph.shortestPath(origin.id, dest.id).concat([origin.id]).reverse());     
-            console.log(graph.shortestPath(start, end).concat([start]).reverse());  
-            return graph;
+            var optimalPath = graph.shortestPath(start, end).concat([start]).reverse();
+            /*var costs = new Array();
+            var times = new Array();
+            for (var i = 0; i < optimalPath.length - 1; i++) {
+                var start = optimalPath[i];
+                var end = optimalPath[i + 1];
+                var cost = nodeDict[start].adjacent[end];
+                var time = nodeDict[start].times[end];
+                costs.push(cost);
+                times.push(time);
+            }*/
+            
+            response["path"] = optimalPath;
+            //response["costs"] = costs;
+            //response["times"] = times;
+            response["nodeDict"] = nodeDict;
+            //console.log(response);  
+            //return response;
         })
-    })
+        //return response;
+    })   
+    return response; 
+}
+
+function getCostsAndTimes(nodeDict, path) {
+    var costs = new Array();
+    var times = new Array();
+    for (var i = 0; i < path.length - 1; i++) {
+                var start = path[i];
+                var end = path[i + 1];
+                var cost = nodeDict[start].adjacent[end];
+                var time = nodeDict[start].times[end];
+                costs.push(cost);
+                times.push(time);        
+    }
+    var res = {};
+    res["costs"] = costs;
+    res["times"] = times;
+    return res;
+}
+
+app.get('/getGraph', function(req, res) {
+    return getOptimalPath();
 })
+
+function compare(optimalPath, googlePath) {
+    var routes = googlePath.routes;
+    //if (optimalPath.length != googlePath.length) return ;
+    var countDifferences = 0;
+    let set = new Set(optimalPath);
+    for (var i = 0; i < googlePath.length; i++) {
+        if(!set.delete(googlePath[i])) countDifferences++;
+    }
+    countDifferences += set.size;
+    return countDifferences;
+}
 
 // Listen
 app.listen(3000, function () {
@@ -214,6 +301,7 @@ function PriorityQueue () {
 function Node (node) {
     this.nodeId = getNodeKey(node);
     this.adjacent = {};
+    this.times = {};
     this.lat = node.location.lat;
     this.lng = node.location.lng;
 }
@@ -223,6 +311,7 @@ function Edge (edge, nodeDict) {
     this.startNode = getStartNode(edge, nodeDict);
     this.endNode = getEndNode(edge, nodeDict);
     //this.edge = edge;
+    this.time = getWorstCaseDuration(edge);
     this.cost = getCost(edge);//take the worst 
 }
 
@@ -241,9 +330,20 @@ function getCost (edge) {
         varSum += diff * diff;
     }
     var variance = Math.sqrt(varSum / (data.length));
-    var cost = distance / (mean + 1.282 * variance);
+    var cost =  (mean + 1.282 * variance) / distance; //we want lower cost for lower time...
+    //var cost = mean + 1.282 * variance;
     return cost;
 
+}
+
+function getWorstCaseDuration (edge) {
+    var data = edge.duration;
+    if (data.length == 0) return 0;
+    var worst = data[0].value;
+    for (var i = 1; i < data.length; i++) {
+        worst = Math.max(data[i].value, worst);
+    }
+    return worst;
 }
 
 function getNodeKey(node) {
