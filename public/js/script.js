@@ -28,10 +28,17 @@ function setDetailedResults() {
   if (!allRouteData) alert("You must first press start!");
   else {
     for (var i = 0; i < tabIds.length; i++) {
+      var route = allRouteData[i];      
+      if (route.chosen == true) {
+        $('#tabs').tabs({
+          active: i
+        });
+        document.getElementById("detailed-title").innerHTML = "Path " + (i + 1);
+      }
       var currDiv = document.getElementById(tabIds[i]);
       var htmlText = "";
-      var route = allRouteData[i];
       htmlText += "<table><tbody>";
+
       for (var j = -1; j < route.stats.costs.length; j++) {
         var index;
         var startNode;
