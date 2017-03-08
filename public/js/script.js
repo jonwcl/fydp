@@ -13,7 +13,7 @@ var tempstartlat;
 var allRouteData;
 
 var tabIds = ["tabs-1", "tabs-2", "tabs-3"];
-var columnNames = ["","Start Node", "End Node", "Cost", "Worst Time in Seconds"];
+var columnNames = ["","Start Node", "End Node", "Cost in Seconds (90th Worst Percentile)", "Worst Time in Seconds"];
 
 function showDetailedResults() {
   document.getElementById('light').style.display='block';

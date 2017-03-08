@@ -338,7 +338,7 @@ function getCost (edge) {
         varSum += diff * diff;
     }
     var variance = Math.sqrt(varSum / (data.length));
-    var cost =  (mean + 1.282 * variance) / distance; //we want lower cost for lower time...
+    var cost =  (mean + 1.282 * variance); //we want lower cost for lower time...
     //var cost = mean + 1.282 * variance;
     return cost;
 
