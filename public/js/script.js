@@ -236,7 +236,18 @@ function initGoogleMap(){
 	  //finddestination();
 	  });
 
-  google.maps.event.addListener(marker, "click", function (event) {
+      var marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location,
+        icon: {
+          url: 'http://maps.gstatic.com/mapfiles/circle.png',
+          anchor: new google.maps.Point(10, 10),
+          scaledSize: new google.maps.Size(10, 17)
+        }
+      });
+
+
+  google.maps.event.addListener(marker, 'click', function (event) {
                     alert(this.latandlong);
 }); //end addListener
 
