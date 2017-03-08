@@ -83,13 +83,39 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             $window.setDetailedResults();
             // alert("Success!");
             // $window.directionsDisplay.setDirections(response);
-            for (var i = 0, len = response.routes.length; i < len; i++) {
-                new google.maps.DirectionsRenderer({
-                    map: map,
-                    directions: response,
-                    routeIndex: i
-                });
-            }
+
+            var polylineOptionsOne = new google.maps.Polyline({
+                strokeColor: '#00FF00',
+                strokeOpacity: 1.0,
+                strokeWeight: 6
+            });
+
+            var polylineOptionsTwo = new google.maps.Polyline({
+                strokeColor: '#0000FF',
+                strokeOpacity: 1.0,
+                strokeWeight: 6
+            });
+
+            new google.maps.DirectionsRenderer({
+                map: map,
+                directions: response,
+                routeIndex: 0
+            });
+
+            new google.maps.DirectionsRenderer({
+                map: map,
+                polylineOptions: polylineOptionsOne,
+                directions: response,
+                routeIndex: 1
+            });
+
+            new google.maps.DirectionsRenderer({
+                map: map,
+                polylineOptions: polylineOptionsTwo,
+                directions: response,
+                routeIndex: 2
+            });
+
 
             var res = data.data;
             var reliableIndex = 0;
@@ -104,7 +130,7 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             var polylineOptionsActual = new google.maps.Polyline({
                 strokeColor: '#FF0000',
                 strokeOpacity: 1.0,
-                strokeWeight: 6
+                strokeWeight: 3
             });
 
             new google.maps.DirectionsRenderer({
