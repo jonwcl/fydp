@@ -81,7 +81,7 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             $window.directionsDisplay.setDirections(response);
             $window.allRouteData = data.data.result;
             $window.setDetailedResults();
-            alert("Success!");
+            // alert("Success!");
             // $window.directionsDisplay.setDirections(response);
             for (var i = 0, len = response.routes.length; i < len; i++) {
                 new google.maps.DirectionsRenderer({
