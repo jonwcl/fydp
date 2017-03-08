@@ -84,6 +84,12 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             // alert("Success!");
             // $window.directionsDisplay.setDirections(response);
 
+            var polylineOptionsZero = new google.maps.Polyline({
+                strokeColor: '#00FFFF',
+                strokeOpacity: 1.0,
+                strokeWeight: 6
+            });
+
             var polylineOptionsOne = new google.maps.Polyline({
                 strokeColor: '#00FF00',
                 strokeOpacity: 1.0,
@@ -91,13 +97,14 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             });
 
             var polylineOptionsTwo = new google.maps.Polyline({
-                strokeColor: '#0000FF',
+                strokeColor: '#FFFF00',
                 strokeOpacity: 1.0,
                 strokeWeight: 6
             });
 
             new google.maps.DirectionsRenderer({
                 map: map,
+                polylineOptions: polylineOptionsZero,
                 directions: response,
                 routeIndex: 0
             });
