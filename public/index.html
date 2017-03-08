@@ -67,12 +67,12 @@
         <div class="panel panel-default">
           <!-- Panel Heading -->
           <div class="panel-heading">
-            <h3 class="panel-title">Navigation</h3>
+            <h3 class="panel-title"><span class="glyphicon glyphicon-road" aria-hidden="true"></span>   Navigation</h3>
           </div>
           <!-- Panel Body -->
           <div class="panel-body" ng-model="mapDirection">
             <!-- Origin Location -->
-            <label>Origin</label>
+            <label><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Origin</label>
 			<input id="pac-input" class="form-control" type="text" placeholder="Current Location">
 			<br />
             <div class="input-group">
@@ -88,7 +88,7 @@
             <button type="button" class="btn btn-secondary btn-block" ng-click="getCurrentLocation()">Get Current Location</button>
             <br />
             <!-- Destination Location -->
-            <label>Destination</label>
+            <label><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Destination</label>
 			<input id="pac-input2" class="form-control" type="text" placeholder="Destination Location">
 			<br />
             <div class="input-group">
@@ -103,16 +103,15 @@
             <br />
             <button id="destbutton" onclick="finddestination()" type="button" class="btn btn-secondary btn-block" ng-click="getDestLocation()">Get Destination Location</button>
             <br />
-            <!-- Look Up Button -->
+			<!-- Start Button -->
+            <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()"><span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span></button>
+            <br/>
+			<!-- Look Up Button -->
             <div class="input-group">
-              <input id="loopUpKeyword" type="text" class="form-control" placeholder="e.g burger" aria-describedby="basic-addon1">
-              <span class="input-group-addon" id="basic-addon1">Search</span>
+			<span class="input-group-addon" id="basic-addon1">Look Up</span>
+              <input id="loopUpKeyword" type="text" class="form-control" placeholder="e.g. burger" aria-describedby="basic-addon1">
+			  <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-info btn-block"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></button>
             </div>
-            <br />
-            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Detailed Look Up</button>
-            <br />
-            <!-- Start Button -->
-            <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
           </div>
         </div>
         <br />
@@ -132,7 +131,7 @@
             </div>
             <br />
             <Start Button -->
-            <button type="button" class="btn btn-danger btn-block" onclick="showDetailedResults()">Show Detailed Results</button>
+            <button type="button" class="btn btn-danger btn-block" onclick="showDetailedResults()"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>  Show Detailed Results</button>
           </div>
 
           <!-- The Google Map View -->
