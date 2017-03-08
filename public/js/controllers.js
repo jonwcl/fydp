@@ -82,6 +82,37 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             $window.allRouteData = data.data.result;
             $window.setDetailedResults();
             alert("Success!");
+            // $window.directionsDisplay.setDirections(response);
+            for (var i = 0, len = response.routes.length; i < len; i++) {
+                new google.maps.DirectionsRenderer({
+                    map: map,
+                    directions: response,
+                    routeIndex: i
+                });
+            }
+
+            var res = data.data;
+            var reliableIndex = 0;
+            var pathTime = res.result[0].totalTime;
+            for (var i in res.result) {
+                if (res.result[i].totalTime < pathTime) {
+                    pathTime = res.result[i].totalTime;
+                    reliableIndex = i;
+                }
+            }
+
+            var polylineOptionsActual = new google.maps.Polyline({
+                strokeColor: '#FF0000',
+                strokeOpacity: 1.0,
+                strokeWeight: 6
+            });
+
+            new google.maps.DirectionsRenderer({
+                map: map,
+                polylineOptions: polylineOptionsActual,
+                directions: response,
+                routeIndex: parseInt(reliableIndex)
+            });
         });
       } else {
         alert('Directions request failed due to ' + status);
