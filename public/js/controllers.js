@@ -79,6 +79,8 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
             // console.log("choosePath");
             console.log(data);
             $window.directionsDisplay.setDirections(response);
+            $window.allRouteData = data.data.result;
+            $window.setDetailedResults();
             alert("Success!");
         });
       } else {
