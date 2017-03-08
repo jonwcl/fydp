@@ -78,6 +78,10 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
         $http.post('/choosePath', routes).then(function(data){
             // console.log("choosePath");
             console.log(data);
+            $window.directionsDisplay.setDirections(response);
+            $window.allRouteData = data.data.result;
+            $window.setDetailedResults();
+            alert("Success!");
             // $window.directionsDisplay.setDirections(response);
             for (var i = 0, len = response.routes.length; i < len; i++) {
                 new google.maps.DirectionsRenderer({
@@ -109,8 +113,6 @@ mapController.controller('mapController', function($scope, $http, $window, geolo
                 directions: response,
                 routeIndex: parseInt(reliableIndex)
             });
-
-            // alert("Success!");
         });
       } else {
         alert('Directions request failed due to ' + status);

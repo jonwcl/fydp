@@ -10,6 +10,65 @@ var tempdestlng;
 var tempdestlat;
 var tempstartlng;
 var tempstartlat;
+var allRouteData;
+
+var tabIds = ["tabs-1", "tabs-2", "tabs-3"];
+var columnNames = ["","Start Node", "End Node", "Cost", "Worst Time in Seconds"];
+
+function showDetailedResults() {
+  document.getElementById('light').style.display='block';
+  document.getElementById('fade').style.display='block';
+}
+
+function hideDetailedResults() {
+  document.getElementById('light').style.display='none';
+  document.getElementById('fade').style.display='none';
+}
+function setDetailedResults() {
+  if (!allRouteData) alert("You must first press start!");
+  else {
+    for (var i = 0; i < tabIds.length; i++) {
+      var currDiv = document.getElementById(tabIds[i]);
+      var htmlText = "";
+      var route = allRouteData[i];
+      htmlText += "<table><tbody>";
+      for (var j = -1; j < route.stats.costs.length; j++) {
+        var index;
+        var startNode;
+        var endNode;
+        var cost;
+        var time;
+        if (j == -1) {
+          index = columnNames[0];
+          startNode = columnNames[1];
+          endNode = columnNames[2];
+          cost = columnNames[3];
+          time = columnNames[4];
+        } else {
+          index = j;
+          startNode = route.path[j];
+          endNode = route.path[j + 1];
+          cost = route.stats.costs[j];
+          time = route.stats.times[j];
+        }
+          htmlText += "<tr>";
+          htmlText += "<th>" + index + "</th>";
+          htmlText += "<th>" + startNode + "</th>";
+          htmlText += "<th>" + endNode + "</th>";
+          console.log(htmlText);
+          htmlText += "<th>" + cost + "</th>";
+          htmlText += "<th>" + time + "</th>";
+          htmlText += "</tr>";
+          //console.log(currDiv.innerHMTL);
+      }
+      htmlText += "</tbody></table>";
+      htmlText += "<p> Total Worst Case Time is : " + route.totalTime + " seconds.</p>";
+      currDiv.innerHTML = htmlText;
+      //console.log(htmlText);
+    }
+
+  }
+}
 
 function initGoogleMap(){
   directionsDisplay = new google.maps.DirectionsRenderer;

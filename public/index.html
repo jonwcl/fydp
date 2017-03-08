@@ -13,10 +13,78 @@
   <script src="js/script.js"></script>
   <script src="bower_components/angularjs-geolocation/dist/angularjs-geolocation.min.js"></script>
   <script src="js/controllers.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#tabs" ).tabs();
+  } );
+  </script>
   <!-- Holder JS -->
   <script src="bower_components/holderjs/holder.js"></script>
 </head>
+
 <body ng-controller="mapController">
+  <div id="light" class="white_content">
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1">Path One</a></li>
+        <li><a href="#tabs-2">Path Two</a></li>
+        <li><a href="#tabs-3">Path Three</a></li>
+      </ul>
+      <div id="tabs-1">
+      
+<table>
+  <tr>
+    <th>Company</th>
+    <th>Contact</th>
+    <th>Country</th>
+  </tr>
+  <tr>
+    <td>Alfreds Futterkiste</td>
+    <td>Maria Anders</td>
+    <td>Germany</td>
+  </tr>
+  <tr>
+    <td>Centro comercial Moctezuma</td>
+    <td>Francisco Chang</td>
+    <td>Mexico</td>
+  </tr>
+  <tr>
+    <td>Ernst Handel</td>
+    <td>Roland Mendel</td>
+    <td>Austria</td>
+  </tr>
+  <tr>
+    <td>Island Trading</td>
+    <td>Helen Bennett</td>
+    <td>UK</td>
+  </tr>
+  <tr>
+    <td>Laughing Bacchus Winecellars</td>
+    <td>Yoshi Tannamuri</td>
+    <td>Canada</td>
+  </tr>
+  <tr>
+    <td>Magazzini Alimentari Riuniti</td>
+    <td>Giovanni Rovelli</td>
+    <td>Italy</td>
+  </tr>
+</table>
+
+      </div>
+      <div id="tabs-2">
+      </div>
+      <div id="tabs-3">
+      </div>
+    </div>
+
+
+
+    <a href="javascript:void(0)" onclick="hideDetailedResults()">Close</a>
+  </div>
+  <div id="fade" class="black_overlay"></div>          
   <div class="container">
     <!-- Page Header -->
     <div class="page-header">
@@ -96,6 +164,9 @@
             <div ng-model="travelTime">
               {{travelTime}}
             </div>
+            <br />
+            <!-- Start Button -->
+            <button type="button" class="btn btn-danger btn-block" onclick="showDetailedResults()">Show Detailed Results</button>
           </div>
       </div -->
       </div>
