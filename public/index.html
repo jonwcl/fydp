@@ -103,6 +103,32 @@
             <br />
             <button id="destbutton" onclick="finddestination()" type="button" class="btn btn-secondary btn-block" ng-click="getDestLocation()">Get Destination Location</button>
             <br />
+			<!-- Slider -->
+			<div data-role="main" class="ui-content">
+			<input type="range" min="0" max="4" value="2" onchange="showValue(this.value)" />
+			<label><span class="input-group-addon" id="basic-addon1"><span id="range">90</span>%&nbsp;Percentile</label>
+			<script type="text/javascript">
+			function showValue(newValue)
+			{
+				if (newValue == 0){
+				document.getElementById("range").innerHTML=50;
+				}
+				if (newValue == 1){
+				document.getElementById("range").innerHTML=75;
+				}
+				if (newValue == 2){
+				document.getElementById("range").innerHTML=90;
+				}
+				if (newValue == 3){
+				document.getElementById("range").innerHTML=95;
+				}
+				if (newValue == 4){
+				document.getElementById("range").innerHTML=99;
+				}
+			}
+			</script>
+			</div>
+			</br>
 			<!-- Start Button -->
             <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()"><span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span></button>
             <br/>
