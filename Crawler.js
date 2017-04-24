@@ -1,30 +1,202 @@
 var googDir = 'https://maps.googleapis.com/maps/api/directions/';
 var googLoc = 'https://maps.googleapis.com/maps/api/place/nearbysearch/';
+
 var googleAPIKey = 'AIzaSyDrCDc2H3nnU1Xzse6kLULKvwWGeRwUY_s';
+var APIKeys = ['AIzaSyDrCDc2H3nnU1Xzse6kLULKvwWGeRwUY_s', 'AIzaSyAsoK1pxNsjff_ae4hIJ5rwXk1voJla3qs', 'AIzaSyDPHk_lJHhFLJlgxWD5RuSNbLj4FP6QXcY', 'AIzaSyA1zyydvfPFqTnvgp-hx_rczkcJHRXs_mE', 'AIzaSyDOrKlDiLd-93OJw2nFSAhahHc-50gS2eg'];
 var request = require('request');
+var fs = require('fs');
 const mongoose = require('mongoose');
+var waterloo = { lat: 43.4642578, lng: -80.5204096 };
+var toronto = { lat: 43.6532260, lng: -79.3831843 };
+var apiCount = 0;
 
 var crawler = function (Factory, mongo) {
     this.Factory = Factory;
     this.Mongo = mongo;
     this.last = null;
     this.main = function () {
+        console.log("this.last");
+        var goog = googDir;
+        var count = 0;
+        var complete = 0;
+        var apiCount = 0;
+        goog = goog + 'json?origin=' + waterloo.lat + ", " + waterloo.lng;
+        goog = goog + '&destination=' + toronto.lat + ", " + toronto.lng;
+        goog = goog + '&alternatives=true';
+        goog = goog + '&departure_time=' + Date.now();
+        goog = goog + '&key=' + googleAPIKey;
+        console.log(goog);
+        request(goog, function (error, response, body) {
+            if (error || response.statusCode != 200) {
+                return console.log(error);
+            }
+            
+            var newerror = "";
+            var time = Date.now();
+            var parse = JSON.parse(body);
+            if (parse.status != "OK") {
+                return console.log("Status not OK");
+            }
+            var parsedBody = JSON.parse(body);
+
+            for (var j = 0; j < parsedBody.routes.length; j++){
+                var parsed = parsedBody.routes[j].legs[0].steps;
+                var duration = parsedBody.routes[j].legs[0].duration.value;
+                var realDuration = parsedBody.routes[j].legs[0].duration_in_traffic.value;
+                count += parsed.length + 1;
+
+                for (var i = 0; i < parsed.length; i++) {
+                    var edge = parsed[i];
+                    if (i == 0) {
+                        checkNode({
+                            location: {
+                                lat: Number(edge.start_location.lat).toFixed(7),
+                                lng: Number(edge.start_location.lng).toFixed(7)
+                            }
+                        }, Factory, mongo, function (err, data) {
+                            complete++;
+                            if (err) {
+                                newerror += err;
+                            }
+                            if (complete == count) {
+                                var now = new Date(Date.now());
+                                if (newerror != "") {
+                                    return console.log("Error: " + newerror + " at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                                }
+                                return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                            }
+                        });
+                    }
+
+                    getAllEdges(edge, Factory, mongo, function (err, data) {
+                        complete++;
+                        if (err) {
+                            newerror += err;
+                        }
+                        if (complete == count) {
+                            var now = new Date(Date.now());
+                            if (newerror != "") {
+                                return console.log("Error: " + newerror + " at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                            }
+                            return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                        }
+                    });
+
+                    /*checkEdge({
+                        destination: {
+                            lat: Number(edge.end_location.lat).toFixed(7),
+                            lng: Number(edge.end_location.lng).toFixed(7)
+                        },
+                        origin: {
+                            lat: Number(edge.start_location.lat).toFixed(7),
+                            lng: Number(edge.start_location.lng).toFixed(7)
+                        },
+                        distance: {
+                            text: edge.distance.text,
+                            value: Number(edge.distance.value)
+                        },
+                        duration: [{
+                            text: edge.duration.text,
+                            value: Number( (edge.duration.value / duration) * realDuration ).toFixed(0)
+                        }],
+                        start_time: [time]
+                    }, Factory, mongo, function (err, data) {
+                        complete++;
+                        if (err) {
+                            newerror += err;
+                        }
+                        if (complete == count) {
+                            var now = new Date(Date.now());
+                            if (newerror != "") {
+                                return console.log("Error: " + newerror + " at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                            }
+                            return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                        }
+                    });*/
+                    checkNode({
+                        location: {
+                            lat: Number(edge.end_location.lat).toFixed(7),
+                            lng: Number(edge.end_location.lng).toFixed(7)
+                        }
+                    }, Factory, mongo, function (err, data) {
+                        complete++;
+                        if (err) {
+                            newerror += err;
+                        }
+                        if (complete == count) {
+                            var now = new Date(Date.now());
+                            if (newerror != "") {
+                                return console.log("Error: " + newerror +" at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                            }
+                            return console.log("Updated Request at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+                        }
+                    });
+                }
+            }
+
+            /*fs.writeFile("/tmp/test.txt", JSON.stringify(JSON.parse(body)), function (err) {
+                if (err) {
+                    return console.log(err);
+                }
+
+                console.log("The file was saved!");
+            });*/
+        });
+    }
+}
+
+
+function getAllEdges(edge, Factory, mongo, callback) {
+    var goog = googDir;
+    var waittime = Math.floor(Math.random() * (30*1000 - 1));
+    setTimeout(function () {
+        goog = goog + 'json?origin=' + edge.start_location.lat + ", " + edge.start_location.lng;
+        goog = goog + '&destination=' + edge.end_location.lat + ", " + edge.end_location.lng;
+        goog = goog + '&departure_time=' + Date.now();
+        goog = goog + '&key=' + APIKeys[apiCount % (APIKeys.length)];
+        apiCount += 1;
+
+        request(goog, function (error, res, newbody) {
+            if (error || res.statusCode != 200) {
+                return console.log(error);
+            }
+            var time = Date.now();
+            
+            checkEdge({
+                destination: {
+                    lat: Number(edge.end_location.lat).toFixed(7),
+                    lng: Number(edge.end_location.lng).toFixed(7)
+                },
+                origin: {
+                    lat: Number(edge.start_location.lat).toFixed(7),
+                    lng: Number(edge.start_location.lng).toFixed(7)
+                },
+                distance: {
+                    text: edge.distance.text,
+                    value: Number(edge.distance.value)
+                },
+                duration: [{
+                    text: JSON.parse(newbody).routes[0].legs[0].duration_in_traffic.text,
+                    value: JSON.parse(newbody).routes[0].legs[0].duration_in_traffic.value
+                }],
+                start_time: [time]
+            }, Factory, mongo, function (err, data) {
+                if (err) {
+                    return callback(err);
+                }
+                return callback(undefined, data);
+            });
+        });
+    }, waittime);
+}
+
+/*var crawler = function (Factory, mongo) {
+    this.Factory = Factory;
+    this.Mongo = mongo;
+    this.last = null;
+    this.main = function () {
         console.log("Crawler");
         console.log(this.last);
-        var search = function () {
-            var newer = new Date(Date.now() - 20 * 60 * 1000);
-            var older = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-
-            if (this.lastRequest.length == 0 || (this.complete == false && this.lastRequest[this.lastRequest.length - 1] < newer)) {
-                return true;
-            }
-            if (this.complete == true && this.lastRequest[this.lastRequest.length - 1] < older) {
-                this.request = 0;
-                this.lastRequest = [];
-                return true;
-            }
-            return false;
-        };
         Factory.getRequest({ $where: search }, function (error, data) {
             if (error) {
                 console.log(error);
@@ -90,7 +262,7 @@ var crawler = function (Factory, mongo) {
             }
         });
     }
-}
+}*/
 
 function checkArray(lastRequest) {
     console.log("checkArray");
@@ -283,12 +455,18 @@ function checkComplete(req, Factory, mongo, callback) {
 
 function checkNode(node, Factory, mongo, callback) {
     //console.log("checkNode");
-    Factory.getNode(node, function (error, data) {
+    var check = {
+        location: {
+            lat: Number(node.location.lat),
+            lng: Number(node.location.lng)
+        }
+    };
+    Factory.getNode(check, function (error, data) {
         if (error) {
             return callback(error);
         }
 
-        if (!data) {
+        if (!data || data.length == 0) {
             var newNode = new mongo.MapNode(node);
             newNode.save(function (err, data) {
                 if (err) {
@@ -439,85 +617,3 @@ function distcalc(start, end) {
 }
 
 module.exports.Crawler = crawler;
-
-
-//if (parse.length > 4) {
-//    var shortRequest, shortestRequest, longRequest, longestRequest;
-//    for (var i = 0; i < parse.length; i++) {
-//        if (i == 0) {
-//            shortestRequest = parse[i];
-//            shortRequest = parse[i];
-//            longestRequest = parse[i];
-//            longRequest = parse[i];
-//        }
-//        else {
-//            if (distcalc(centerLoc, parse[i].geometry.location) > distcalc(centerLoc, longestRequest.geometry.location)) {
-//                longRequest = longestRequest;
-//                longestRequest = parse[i];
-//            }
-//            else if (distcalc(centerLoc, parse[i].geometry.location) > distcalc(centerLoc, longRequest.geometry.location)) {
-//                longRequest = parse[i];
-//            }
-
-//            if (distcalc(centerLoc, parse[i].geometry.location) > distcalc(centerLoc, shortestRequest.geometry.location)) {
-//                shortRequest = shortestRequest;
-//                shortestRequest = parse[i];
-//            }
-//            else if (distcalc(centerLoc, parse[i].geometry.location) > distcalc(centerLoc, shortRequest.geometry.location)) {
-//                shortRequest = parse[i];
-//            }
-//        }
-//    }
-
-//    var newRequest = [{
-//        destination: shortestRequest.geometry.location,
-//        origin: req.origin,
-//        complete: false
-//    },
-//        {
-//            destination: shortRequest.geometry.location,
-//            origin: req.origin,
-//            complete: false
-//        },
-//        {
-//            destination: longRequest.geometry.location,
-//            origin: req.origin,
-//            complete: false
-//        },
-//        {
-//            destination: longestRequest.geometry.location,
-//            origin: req.origin,
-//            complete: false
-//        },
-//        {
-//            destination: req.destination,
-//            origin: shortestRequest.geometry.location,
-//            complete: false
-//        },
-//        {
-//            destination: req.destination,
-//            origin: shortRequest.geometry.location,
-//            complete: false
-//        },
-//        {
-//            destination: req.destination,
-//            origin: longRequest.geometry.location,
-//            complete: false
-//        },
-//        {
-//            destination: req.destination,
-//            origin: longestRequest.geometry.location,
-//            complete: false
-//        }];
-//    console.log(newRequest);
-//    Factory.RequestHist.create(newRequest, function (err, mapEdgeEntry) {
-//        if (err) {
-//            return console.log("failed edge");
-//        }
-//        else {
-//            console.log("inserted request2");
-//            console.log(mapEdgeEntry);
-//        }
-//    });
-//}
-//else { }

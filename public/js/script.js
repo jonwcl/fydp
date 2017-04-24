@@ -10,6 +10,72 @@ var tempdestlng;
 var tempdestlat;
 var tempstartlng;
 var tempstartlat;
+var allRouteData;
+
+var tabIds = ["tabs-1", "tabs-2", "tabs-3"];
+var columnNames = ["","Start Node", "End Node", "Cost in Seconds (90th Worst Percentile)", "Worst Time in Seconds"];
+
+function showDetailedResults() {
+  document.getElementById('light').style.display='block';
+  document.getElementById('fade').style.display='block';
+}
+
+function hideDetailedResults() {
+  document.getElementById('light').style.display='none';
+  document.getElementById('fade').style.display='none';
+}
+function setDetailedResults() {
+  if (!allRouteData) alert("You must first press start!");
+  else {
+    for (var i = 0; i < tabIds.length; i++) {
+      var route = allRouteData[i];      
+      if (route.chosen == true) {
+        $('#tabs').tabs({
+          active: i
+        });
+        document.getElementById("detailed-title").innerHTML = "Path " + (i + 1);
+      }
+      var currDiv = document.getElementById(tabIds[i]);
+      var htmlText = "";
+      htmlText += "<table><tbody>";
+
+      for (var j = -1; j < route.stats.costs.length; j++) {
+        var index;
+        var startNode;
+        var endNode;
+        var cost;
+        var time;
+        if (j == -1) {
+          index = columnNames[0];
+          startNode = columnNames[1];
+          endNode = columnNames[2];
+          cost = columnNames[3];
+          time = columnNames[4];
+        } else {
+          index = j;
+          startNode = route.path[j];
+          endNode = route.path[j + 1];
+          cost = route.stats.costs[j];
+          time = route.stats.times[j];
+        }
+          htmlText += "<tr>";
+          htmlText += "<th>" + index + "</th>";
+          htmlText += "<th>" + startNode + "</th>";
+          htmlText += "<th>" + endNode + "</th>";
+          console.log(htmlText);
+          htmlText += "<th>" + cost + "</th>";
+          htmlText += "<th>" + time + "</th>";
+          htmlText += "</tr>";
+          //console.log(currDiv.innerHMTL);
+      }
+      htmlText += "</tbody></table>";
+      htmlText += "<p> Total Worst Case Time is : " + route.totalTime + " seconds.</p>";
+      currDiv.innerHTML = htmlText;
+      //console.log(htmlText);
+    }
+
+  }
+}
 
 function initGoogleMap(){
   directionsDisplay = new google.maps.DirectionsRenderer;
@@ -66,6 +132,15 @@ function initGoogleMap(){
     title: place.name,
     position: place.geometry.location
   }));
+
+  var x = place.geometry.location.lat();
+  var y = place.geometry.location.lng();
+  // document.getElementById("startlat").value = x.toFixed(7);
+  // document.getElementById("startlong").value = y.toFixed(7);
+
+  document.getElementById("startlat").value = "43.4642578";
+  document.getElementById("startlong").value = "-80.5204096";
+
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
@@ -74,15 +149,15 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
-	
+
 	var geocoder = new google.maps.Geocoder();
-	
+
 	searchBox.addListener('places_changed', function(){
 		alert("ok");
 		  geocodeAddress1(geocoder, map);
         });
     });
-  
+
   // Create the search box and link it to the UI element.
   var input2 = document.getElementById('pac-input2');
   var searchBox2 = new google.maps.places.SearchBox(input2);
@@ -124,6 +199,14 @@ function initGoogleMap(){
     title: place.name,
     position: place.geometry.location
   }));
+
+  var x = place.geometry.location.lat();
+  var y = place.geometry.location.lng();
+  // document.getElementById("destlat").value = x.toFixed(7);
+  // document.getElementById("destlong").value = y.toFixed(7);
+
+  document.getElementById("destlat").value = "43.6532260";
+  document.getElementById("destlong").value = "-79.3831843";
   if (place.geometry.viewport) {
     // Only geocodes have viewport.
     bounds.union(place.geometry.viewport);
@@ -132,16 +215,16 @@ function initGoogleMap(){
     }
     });
     map.fitBounds(bounds);
-	
+
 	var geocoder = new google.maps.Geocoder();
 	searchBox2.addListener('places_changed', function(){
 		alert("ok");
 		  geocodeAddress2(geocoder, map);
         });
     });
-	
-   
-	
+
+
+
   directionsDisplay.setMap(map);
 
   google.maps.event.addListener(map, 'click', function(event){
@@ -150,13 +233,24 @@ function initGoogleMap(){
 	  var y = event.latLng.lng();
 	  document.getElementById("destlat").value = x.toFixed(7);
 	  document.getElementById("destlong").value = y.toFixed(7);
-	 //finddestination();
+	  //finddestination();
 	  });
 
-  google.maps.event.addListener(marker, "click", function (event) {
+      var marker = new google.maps.Marker({
+        map: map,
+        position: place.geometry.location,
+        icon: {
+          url: 'http://maps.gstatic.com/mapfiles/circle.png',
+          anchor: new google.maps.Point(10, 10),
+          scaledSize: new google.maps.Size(10, 17)
+        }
+      });
+
+
+  google.maps.event.addListener(marker, 'click', function (event) {
                     alert(this.latandlong);
 }); //end addListener
- 
+
 }
 
 function finddestination() {
@@ -249,4 +343,3 @@ function geocodeAddress2(geocoder, resultsMap) {
           }
         });
 }
-

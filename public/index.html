@@ -3,28 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1.0" />
-  <title>FYDP Map Hack</title>
+  <title>Map Hack</title>
   <!-- CSS -->
   <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" type="text/css" href="css/title.css">
   <!-- JS Source -->
   <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="bower_components/angular/angular.js"></script>
   <script src="js/script.js"></script>
   <script src="bower_components/angularjs-geolocation/dist/angularjs-geolocation.min.js"></script>
   <script src="js/controllers.js"></script>
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#tabs" ).tabs();
+  } );
+  </script>
   <!-- Holder JS -->
   <script src="bower_components/holderjs/holder.js"></script>
 </head>
+
 <body ng-controller="mapController">
+  <div id="light" class="white_content">
+    <a href="javascript:void(0)" onclick="hideDetailedResults()">Close</a>
+    <h2> The Most Reliable Path is : <label id="detailed-title"></label> </h2>
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-1" style="background: #00FFFF">Path One</a></li>
+        <li><a href="#tabs-2" style="background: #00FF00">Path Two</a></li>
+        <li><a href="#tabs-3" style="background: #FFFF00">Path Three</a></li>
+      </ul>
+      <div id="tabs-1">
+      </div>
+      <div id="tabs-2">
+      </div>
+      <div id="tabs-3">
+      </div>
+    </div>
+  </div>
+
+  <div id="fade" class="black_overlay"></div>
+
   <div class="container">
     <!-- Page Header -->
     <div class="page-header">
       <ul class="nav nav-pills pull-right">
-          <li role="presentation" class="active"><a href="">Login</a></li>
-          <li role="presentation"><a href="">Register</a></li>
+          <!-- li role="presentation" class="active"><a href="">Login</a></li -->
+          <!-- li role="presentation"><a href="">Register</a></li -->
       </ul>
-      <h3 class="text-muted">FYDP Map Hack</h3>
+      <h2 align = "center" class="text-muted">
+        <div class="plate">
+          <p class="shadow text1">Map Hack</p>
+        </div>
+      </h2>
     </div>
     <!-- Side Panel and Map -->
     <div class="row content">
@@ -33,12 +67,12 @@
         <div class="panel panel-default">
           <!-- Panel Heading -->
           <div class="panel-heading">
-            <h3 class="panel-title">Navigation</h3>
+            <h3 class="panel-title"><span class="glyphicon glyphicon-road" aria-hidden="true"></span>   Navigation</h3>
           </div>
           <!-- Panel Body -->
           <div class="panel-body" ng-model="mapDirection">
             <!-- Origin Location -->
-            <label>Origin</label>
+            <label><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Origin</label>
 			<input id="pac-input" class="form-control" type="text" placeholder="Current Location">
 			<br />
             <div class="input-group">
@@ -54,7 +88,7 @@
             <button type="button" class="btn btn-secondary btn-block" ng-click="getCurrentLocation()">Get Current Location</button>
             <br />
             <!-- Destination Location -->
-            <label>Destination</label>
+            <label><span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Destination</label>
 			<input id="pac-input2" class="form-control" type="text" placeholder="Destination Location">
 			<br />
             <div class="input-group">
@@ -69,21 +103,46 @@
             <br />
             <button id="destbutton" onclick="finddestination()" type="button" class="btn btn-secondary btn-block" ng-click="getDestLocation()">Get Destination Location</button>
             <br />
-            <!-- Look Up Button -->
+			<!-- Slider -->
+			<div data-role="main" class="ui-content">
+			<input type="range" min="0" max="4" value="2" onchange="showValue(this.value)" />
+			<label><span class="input-group-addon" id="basic-addon1"><span id="range">90</span>%&nbsp;Percentile</label>
+			<script type="text/javascript">
+			function showValue(newValue)
+			{
+				if (newValue == 0){
+				document.getElementById("range").innerHTML=50;
+				}
+				if (newValue == 1){
+				document.getElementById("range").innerHTML=75;
+				}
+				if (newValue == 2){
+				document.getElementById("range").innerHTML=90;
+				}
+				if (newValue == 3){
+				document.getElementById("range").innerHTML=95;
+				}
+				if (newValue == 4){
+				document.getElementById("range").innerHTML=99;
+				}
+			}
+			</script>
+			</div>
+			</br>
+			<!-- Start Button -->
+            <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()"><span class="glyphicon glyphicon-triangle-right" aria-hidden="true"></span></button>
+            <br/>
+			<!-- Look Up Button -->
             <div class="input-group">
-              <input id="loopUpKeyword" type="text" class="form-control" placeholder="e.g burger" aria-describedby="basic-addon1">
-              <span class="input-group-addon" id="basic-addon1">Search</span>
+			<span class="input-group-addon" id="basic-addon1">Look Up</span>
+              <input id="loopUpKeyword" type="text" class="form-control" placeholder="e.g. burger" aria-describedby="basic-addon1">
+			  <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-info btn-block"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span></button>
             </div>
-            <br />
-            <button id="lookupbutton" onclick="lookupfunction()" type="button" class="btn btn-secondary btn-block">Detailed Look Up</button>
-            <br />
-            <!-- Start Button -->
-            <button type="button" class="btn btn-danger btn-block" ng-click="getDirection()">Start</button>
           </div>
         </div>
         <br />
         <!-- Display Some Results Here -->
-        <div class="panel panel-default">
+        <!-- div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Result</h3>
           </div>
@@ -96,14 +155,17 @@
             <div ng-model="travelTime">
               {{travelTime}}
             </div>
+            <br />
+            <Start Button -->
+            <button type="button" class="btn btn-danger btn-block" onclick="showDetailedResults()"><span class="glyphicon glyphicon-stats" aria-hidden="true"></span>  Show Detailed Results</button>
           </div>
-        </div>
-      </div>
 
-      <!-- The Google Map View -->
-    <div class="col-md-9">
-        <div class="map" id="map"></div>
-    </div>
+          <!-- The Google Map View -->
+        <div class="col-md-9">
+            <div class="map" id="map"></div>
+        </div>
+
+      </div>
   </div>
   <!-- Google Maps API -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPHk_lJHhFLJlgxWD5RuSNbLj4FP6QXcY&callback=initGoogleMap&libraries=places,visualization"
